@@ -1,0 +1,189 @@
+---
+title: "Homework_2"
+author: "Nathalie Hanner"
+date: "5/3/2020"
+output: html_document
+---
+
+<center> <h1>Quantitative Methods in Political Science</h1> </center>
+<center> <h1>Leiden University</h1> </center>
+
+```{r, echo=T,warnings=FALSE,messages=FALSE}
+
+rawData <- read.csv("https://raw.githubusercontent.com/nathaliehanner/LU_QA_2020/master/datasets/Corona_mergedV-Dem.csv")
+
+library(ggplot2)
+library(GGally)
+
+
+```
+
+<h3>**1.a.**</h3>
+```{r, echo=T,warnings=FALSE,messages=FALSE}
+summary(rawData$cases_log)
+
+ggplot(rawData,
+       aes(x = cases_log)) +
+  geom_histogram(col='black', fill='dark blue') +
+labs(x = "Nummber of cases", y = "Frequency")
+```
+
+```{r, echo=T,warnings=FALSE,messages=FALSE}
+summary(rawData$v2x_polyarchy)
+
+ggplot(rawData,
+       aes(x = v2x_polyarchy)) +
+  geom_histogram(col='black', fill='maroon') +
+labs(x = "Polyarchy Index", y = "Frequency")
+```
+
+```{r, echo=T,warnings=FALSE,messages=FALSE}
+summary(rawData$v2x_libdem)
+
+ggplot(rawData,
+       aes(x = v2x_libdem)) +
+  geom_histogram(col='black', fill='dark orange') +
+labs(x = "Liberal Democracy Index", y = "Frequency")
+```
+
+```{r, echo=T,warnings=FALSE,messages=FALSE}
+summary(rawData$v2x_partipdem)
+
+ggplot(rawData,
+       aes(x = v2x_partipdem)) +
+  geom_histogram(col='black', fill='dark green') +
+labs(x = "Participatory Democracy Index", y = "Frequency")
+```
+
+<h4>**1.b.**</h4>
+
+``` {r, echo=T,warnings=FALSE,messages=FALSE}
+# If v2x_polyarchy>.5: democracy(1); v2x_polyarchy<.5: nodemocracy(0)
+rawData$polyarchy_cat=ifelse(rawData$v2x_polyarchy > .5, "Democracy", "Autocracy")
+rawData$v2x_polyarchy<-factor(rawData$polyarchy_cat)
+
+matrix_data=data.frame(rawData$popdata2018_log,
+                       rawData$deaths_log,
+                       rawData$v2x_partipdem,
+                       rawData$polyarchy_cat)
+
+ggpairs(matrix_data)
+```
+
+<h5>**1.c.**</h5>
+
+``` {r, echo=T,warnings=FALSE,messages=FALSE}
+# Polyarchy
+# If polyarchy_cat>.5: democracy(1); cases_log<.5: nodemocracy(0)
+
+rawData$polyarchy_cat<-factor(rawData$polyarchy_cat)
+
+boxplot(rawData$cases_log~rawData$polyarchy_cat,
+        col='blue',
+        xlab='Type of Democracy', ylab='Number of Cases')
+```
+
+``` {r, echo=T,warnings=FALSE,messages=FALSE}
+# Liberal Democracy
+# If libdem_cat>.5: democracy(1); cases_log<.5: nodemocracy(0)
+rawData$libdem_cat=ifelse(rawData$v2x_libdem > .5, "Democracy", "Autocracy")
+
+rawData$libdem_cat<-factor(rawData$libdem_cat)
+
+boxplot(rawData$cases_log~rawData$libdem_cat,
+        col='red',
+        xlab='Type of Democracy', ylab='Number of Cases')
+```
+
+``` {r, echo=T,warnings=FALSE,messages=FALSE}
+# Participatory Democracy
+# If partipdem_cat>.5: democracy(1); cases_log<.5: nodemocracy(0)
+rawData$partipdem_cat=ifelse(rawData$v2x_partipdem > .5, "Democracy", "Autocracy")
+
+rawData$partipdem_cat<-factor(rawData$partipdem_cat)
+
+boxplot(rawData$cases_log~rawData$partipdem_cat,
+        col='orange',
+        xlab='Type of Democracy', ylab='Number of Cases')
+```
+
+<h6>**1.d.**</h6>
+``` {r, echo=T,warnings=FALSE,messages=FALSE}
+
+# Functions 1 - 4
+OLS_m1=lm(cases_log~v2x_polyarchy, data=rawData)
+summary(OLS_m1)
+
+plot(rawData$v2x_polyarchy,rawData$cases_log,)
+
+abline(lm(rawData$cases_log ~ rawData$v2x_polyarchy), col = "red")
+```
+
+``` {r, echo=T,warnings=FALSE,messages=FALSE}
+OLS_m2=lm(cases_log~v2x_libdem, data=rawData)
+summary(OLS_m2)
+
+plot(rawData$v2x_libdem, rawData$cases_log)
+
+abline(lm(rawData$cases_log ~ rawData$v2x_libdem), col = "red")
+
+```
+
+``` {r, echo=T,warnings=FALSE,messages=FALSE}
+OLS_m3=lm(cases_log~v2x_partipdem, data=rawData)
+summary(OLS_m3)
+
+plot(rawData$v2x_partipdem,rawData$cases_log)
+abline(lm(rawData$cases_log ~ rawData$v2x_partipdem), col = "red")
+
+```
+
+``` {r, echo=T,warnings=FALSE,messages=FALSE}
+OLS_m4=lm(cases_log~v2x_polyarchy+v2x_libdem+v2x_partipdem, data=rawData)
+summary(OLS_m4)
+
+```
+
+
+``` {r, echo=T,warnings=FALSE,messages=FALSE}
+# Function 5
+OLS_m5=lm(cases_log~v2x_polyarchy+popdata2018, data=rawData)
+
+summary(OLS_m5)
+
+```
+
+``` {r, echo=T,warnings=FALSE,messages=FALSE}
+rawData$norm_case=rawData$cases_log/rawData$popdata2018_log
+
+OLS_m6=lm(norm_case~v2x_polyarchy, data=rawData)
+
+summary(OLS_m6)
+```
+
+``` {r, echo=T,warnings=FALSE,messages=FALSE}
+OLS_m7=lm(norm_case~v2x_polyarchy+popdata2018, data=rawData)
+
+summary(OLS_m7)
+
+```
+
+``` {r, echo=T,warnings=FALSE,messages=FALSE}
+OLS_m8=lm(norm_case~v2x_libdem+popdata2018, data=rawData)
+
+summary(OLS_m8)
+```
+
+``` {r, echo=T,warnings=FALSE,messages=FALSE}
+OLS_m9=lm(norm_case~v2x_partipdem+popdata2018, data=rawData)
+
+summary(OLS_m9)
+```
+
+``` {r, echo=T,warnings=FALSE,messages=FALSE}
+# Interpretation
+# Overall, there seems to be a positive correlation between the number of confirmed Corona cases and the level of democracy. The coefficient of the slope for polyarchy (1.5), however, is slightly lower than the one of liberal democracy (1.7), and this is again lower than the one for participatory democracy (1.25). Accordingly, it seems like the type of democracy makes a minor difference which could be related to the degree of freedom and civil liberties in place in the respective country. For some countries, containment of Corona might be easier than for others because of constitutional restrictions or barriers. In other words, for some states it is easier to impose limits to its citizen's freedoms than in others. The intercept of them is almost the same in all cases and the summarised function 4 illustrates this. Accordingly, the assumption that democracies are vulnerable to the spread of corona seems true.
+
+# The latter part of 1d dealing with the normalised numbers increases the errors. When using the logarithm as before with cases_log, the results are more precise.
+
+```
